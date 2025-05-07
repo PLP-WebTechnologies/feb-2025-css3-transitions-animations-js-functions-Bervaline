@@ -1,102 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Animated Preferences with Local Storage</title>
-  <style>
-    body {
-      transition: background-color 0.5s, color 0.5s;
-      font-family: sans-serif;
-      text-align: center;
-      padding: 50px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Animation Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
 
-    body.light {
-      background-color: #ffffff;
-      color: #000000;
-    }
+        .header {
+            margin: 2rem 0;
+            opacity: 0;
+            animation: fadeIn 1.5s ease-out forwards;
+        }
 
-    body.dark {
-      background-color: #121212;
-      color: #ffffff;
-    }
+        .card-container {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
 
-    button {
-      padding: 12px 24px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: transform 0.3s ease, background-color 0.3s;
-      background-color: #4CAF50;
-      color: white;
-    }
+        .card {
+            width: 200px;
+            height: 300px;
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    button:hover {
-      transform: scale(1.1);
-      background-color: #45a049;
-    }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
 
-    img {
-      margin-top: 40px;
-      width: 150px;
-      height: 150px;
-      transition: transform 0.5s ease;
-    }
+        .card.spin {
+            animation: spin 1s ease-out;
+        }
 
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.4); }
-      100% { transform: scale(1); }
-    }
+        .preference-form {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-    .animate {
-      animation: pop 0.5s ease;
-    }
-  </style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
 <body>
-  <h2>Choose Theme</h2>
-  <button id="themeToggle">Toggle Theme</button>
-  <br>
-  <img id="animatedImage" src="https://images.pexels.com/photos/3998365/pexels-photo-3998365.png?auto=compress&cs=tinysrgb&w=600" alt="Placeholder Image">
+    <h1 class="header">Interactive Animation Demo</h1>
+    
+    <div class="card-container">
+        <div class="card" id="mainCard">
+            <h2>Animation Card</h2>
+            <p>Click the button below to spin me!</p>
+        </div>
+    </div>
 
-  <script>
-    // Load saved theme preference from localStorage
-    function loadTheme() {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark') {
-        document.body.classList.add('dark');
-      } else {
-        document.body.classList.add('light');
-      }
-    }
+    <button onclick="animateCard()" class="animate-button">Spin Card</button>
 
-    // Toggle between light and dark themes, save to localStorage, and animate image
-    function toggleTheme() {
-      document.body.classList.toggle('light');
-      document.body.classList.toggle('dark');
+    <div class="preference-form">
+        <h2>User Preferences</h2>
+        <input type="color" id="bgColor" value="#ffffff">
+        <label for="bgColor">Choose Card Color</label>
+        <button onclick="savePreferences()">Save Preferences</button>
+    </div>
 
-      const currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
-      localStorage.setItem('theme', currentTheme);
+    <script>
+        // Page initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved preferences
+            const savedColor = localStorage.getItem('cardColor');
+            if (savedColor) {
+                document.getElementById('mainCard').style.backgroundColor = savedColor;
+                document.getElementById('bgColor').value = savedColor;
+            }
+        });
 
-      triggerAnimation();
-    }
+        // Card animation function
+        function animateCard() {
+            const card = document.getElementById('mainCard');
+            card.classList.add('spin');
+            
+            // Remove animation class after animation completes
+            card.addEventListener('animationend', () => {
+                card.classList.remove('spin');
+            }, {once: true});
+        }
 
-    // Trigger CSS animation on image
-    function triggerAnimation() {
-      const img = document.getElementById('animatedImage');
-      img.classList.remove('animate'); // reset animation
-      void img.offsetWidth; // force reflow to restart animation
-      img.classList.add('animate');
-    }
-
-    // Add event listener to button
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-
-    // Initialize theme on page load
-    loadTheme();
-  </script>
+        // Save user preferences
+        function savePreferences() {
+            const color = document.getElementById('bgColor').value;
+            localStorage.setItem('cardColor', color);
+            document.getElementById('mainCard').style.backgroundColor = color;
+            
+            // Add visual feedback
+            const button = document.querySelector('.preference-form button');
+            button.style.backgroundColor = '#4CAF50';
+            setTimeout(() => {
+                button.style.backgroundColor = '';
+            }, 500);
+        }
+    </script>
 </body>
 </html>
-
